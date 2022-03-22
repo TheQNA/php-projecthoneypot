@@ -99,7 +99,7 @@ class ProjectHoneyPot
                 }
             }
         } else {
-            return ['error' => 'Invalid IP address.'];
+            return false;
         }
 
         return false;
