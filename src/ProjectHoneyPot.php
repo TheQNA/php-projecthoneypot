@@ -59,7 +59,7 @@ class ProjectHoneyPot
                 if ($results[0] == 127) {
                     $results = [
                         'categories' => (int) $results[3],
-                        'threat_score' => $results[2],
+                        'threat_score' => (int) $results[2],
                         'last_activity' => $results[1] . ' day(s) ago',
                     ];
 
