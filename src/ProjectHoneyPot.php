@@ -63,17 +63,35 @@ class ProjectHoneyPot
                         'last_activity' => $results[1] . ' day(s) ago',
                     ];
 
-                    $categories = match ($results['categories']) {
-                        0 => ['Search Engine'],
-                        1 => ['Suspicious'],
-                        2 => ['Harvester'],
-                        3 => ['Suspicious', 'Harvester'],
-                        4 => ['Comment Spammer'],
-                        5 => ['Suspicious', 'Comment Spammer'],
-                        6 => ['Harvester', 'Comment Spammer'],
-                        7 => ['Suspicious', 'Harvester', 'Comment Spammer'],
-                        default => ['Unknown'],
-                    };
+                    switch ($results['categories']) {
+                        case 0:
+                            $categories = array('Search Engine');
+                            break;
+                        case 1:
+                            $categories = array('Suspicious');
+                            break;
+                        case 2:
+                            $categories = array('Harvester');
+                            break;
+                        case 3:
+                            $categories = array('Suspicious', 'Harvester');
+                            break;
+                        case 4:
+                            $categories = array('Comment Spammer');
+                            break;
+                        case 5:
+                            $categories = array('Suspicious', 'Comment Spammer');
+                            break;
+                        case 6:
+                            $categories = array('Harvester', 'Comment Spammer');
+                            break;
+                        case 7:
+                            $categories = array('Suspicious', 'Harvester', 'Comment Spammer');
+                            break;
+                        default:
+                            $categories = array('Unknown');
+                            break;
+                    }
 
                     $results['categories'] = $categories;
 
