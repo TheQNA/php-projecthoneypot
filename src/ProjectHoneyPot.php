@@ -56,9 +56,7 @@ class ProjectHoneyPot
             if (isset($results[0]['ip'])) {
                 $results = explode('.', $results[0]['ip']);
 
-                if (!dns_get_record($ip_address, DNS_A)) {
-                    return false;
-                } elseif ($results[0] == 127) {
+                if ($results[0] == 127) {
                     $results = [
                         'last_activity' => $results[1],
                         'threat_score' => $results[2],
