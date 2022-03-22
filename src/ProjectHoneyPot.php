@@ -1,62 +1,53 @@
 <?php
 
-/**
- * Project Honey Pot Interface
- *
- * PHP version 5.3+
- *
- * Licensed under The MIT License.
- * Redistribution of these files must retain the above copyright notice.
- *
- * @author    Josh Sherman <hello@joshtronic.com>
- * @copyright Copyright 2012-2015, Josh Sherman
- * @license   http://www.opensource.org/licenses/mit-license.html
- * @link      https://github.com/joshtronic/php-projecthoneypot
- * @link      http://www.projecthoneypot.org/httpbl_configure.php
- */
+declare(strict_types=1);
 
 namespace joshtronic;
+
+use Exception;
 
 class ProjectHoneyPot
 {
     /**
-     * API Key
+     * API Key.
      *
-     * @access private
-     * @var    string
+     * @var string
      */
     private $api_key = '';
 
     /**
-     * Constructor
+     * Constructor.
      *
      * Adds the specified API key to the object.
      *
-     * @access public
-     * @param  string $api_key PHP API Key (12 characters)
+     * @param string $api_key PHP API Key (12 characters)
      */
     public function __construct($api_key)
     {
         if (preg_match('/^[a-z]{12}$/', $api_key)) {
             $this->api_key = $api_key;
         } else {
-            throw new \Exception('You must specify a valid API key.');
+            throw new Exception('You must specify a valid API key.');
         }
     }
 
     /**
-     * Query
+     * Query.
      *
      * Performs a DNS lookup to obtain information about the IP address.
      *
-     * @access public
-     * @param  string $ip_address IPv4 address to check
+     * @param string $ip_address IPv4 address to check
+     *
      * @return array results from query
      */
     public function query($ip_address)
     {
         // Validates the IP format
         if (filter_var($ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE)) {
+            if (!dns_get_record($ip_address, \DNS_A)) {
+                return 'The specified address is not IPv4.';
+            }
+
             // Flips the script, err, IP address
             $octets = explode('.', $ip_address);
             krsort($octets);
@@ -70,40 +61,57 @@ class ProjectHoneyPot
                 $results = explode('.', $results[0]['ip']);
 
                 if ($results[0] == 127) {
-                    $results = array(
+                    $results = [
                         'last_activity' => $results[1],
-                        'threat_score'  => $results[2],
-                        'categories'    => $results[3],
-                    );
+                        'threat_score' => $results[2],
+                        'categories' => $results[3],
+                    ];
 
                     // Creates an array of categories
                     switch ($results['categories']) {
                         case 0:
-                            $categories = array('Search Engine');
+                            $categories = ['Search Engine'];
+
                             break;
+
                         case 1:
-                            $categories = array('Suspicious');
+                            $categories = ['Suspicious'];
+
                             break;
+
                         case 2:
-                            $categories = array('Harvester');
+                            $categories = ['Harvester'];
+
                             break;
+
                         case 3:
-                            $categories = array('Suspicious', 'Harvester');
+                            $categories = ['Suspicious', 'Harvester'];
+
                             break;
+
                         case 4:
-                            $categories = array('Comment Spammer');
+                            $categories = ['Comment Spammer'];
+
                             break;
+
                         case 5:
-                            $categories = array('Suspicious', 'Comment Spammer');
+                            $categories = ['Suspicious', 'Comment Spammer'];
+
                             break;
+
                         case 6:
-                            $categories = array('Harvester', 'Comment Spammer');
+                            $categories = ['Harvester', 'Comment Spammer'];
+
                             break;
+
                         case 7:
-                            $categories = array('Suspicious', 'Harvester', 'Comment Spammer');
+                            $categories = ['Suspicious', 'Harvester', 'Comment Spammer'];
+
                             break;
+
                         default:
-                            $categories = array('Reserved for Future Use');
+                            $categories = ['Reserved for Future Use'];
+
                             break;
                     }
 
@@ -113,21 +121,21 @@ class ProjectHoneyPot
                 }
             }
         } else {
-            return array('error' => 'Invalid IP address.');
+            return ['error' => 'Invalid IP address.'];
         }
 
         return false;
     }
 
     /**
-     * DNS Get Record
+     * DNS Get Record.
      *
      * Wrapper method for dns_get_record() to allow for easy mocking of the
      * results in our tests. Takes an already reversed IP address and does a
      * DNS lookup for A records against the http:BL API.
      *
-     * @access public
-     * @param  string $reversed_ip reversed IPv4 address to check
+     * @param string $reversed_ip reversed IPv4 address to check
+     *
      * @return array results from the DNS lookup
      */
     public function dns_get_record($reversed_ip)
@@ -135,4 +143,3 @@ class ProjectHoneyPot
         return dns_get_record($this->api_key . '.' . $reversed_ip . '.dnsbl.httpbl.org', DNS_A);
     }
 }
-
