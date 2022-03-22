@@ -58,9 +58,9 @@ class ProjectHoneyPot
 
                 if ($results[0] == 127) {
                     $results = [
-                        'last_activity' => $results[1],
+                        'categories' => (int) $results[3],
                         'threat_score' => $results[2],
-                        'categories' => $results[3],
+                        'last_activity' => $results[1] . ' day(s) ago',
                     ];
 
                     $categories = match ($results['categories']) {
@@ -72,7 +72,7 @@ class ProjectHoneyPot
                         5 => ['Suspicious', 'Comment Spammer'],
                         6 => ['Harvester', 'Comment Spammer'],
                         7 => ['Suspicious', 'Harvester', 'Comment Spammer'],
-                        default => ['Reserved for Future Use'],
+                        default => ['Unknown'],
                     };
 
                     $results['categories'] = $categories;
