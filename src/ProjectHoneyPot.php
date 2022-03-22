@@ -44,10 +44,6 @@ class ProjectHoneyPot
     {
         // Validates the IP format
         if (filter_var($ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE)) {
-            if (!dns_get_record($ip_address, \DNS_A)) {
-                return 'The specified address is not IPv4.';
-            }
-
             // Flips the script, err, IP address
             $octets = explode('.', $ip_address);
             krsort($octets);
@@ -60,60 +56,26 @@ class ProjectHoneyPot
             if (isset($results[0]['ip'])) {
                 $results = explode('.', $results[0]['ip']);
 
-                if ($results[0] == 127) {
+                if (!dns_get_record($ip_address, DNS_A)) {
+                    return false;
+                } elseif ($results[0] == 127) {
                     $results = [
                         'last_activity' => $results[1],
                         'threat_score' => $results[2],
                         'categories' => $results[3],
                     ];
 
-                    // Creates an array of categories
-                    switch ($results['categories']) {
-                        case 0:
-                            $categories = ['Search Engine'];
-
-                            break;
-
-                        case 1:
-                            $categories = ['Suspicious'];
-
-                            break;
-
-                        case 2:
-                            $categories = ['Harvester'];
-
-                            break;
-
-                        case 3:
-                            $categories = ['Suspicious', 'Harvester'];
-
-                            break;
-
-                        case 4:
-                            $categories = ['Comment Spammer'];
-
-                            break;
-
-                        case 5:
-                            $categories = ['Suspicious', 'Comment Spammer'];
-
-                            break;
-
-                        case 6:
-                            $categories = ['Harvester', 'Comment Spammer'];
-
-                            break;
-
-                        case 7:
-                            $categories = ['Suspicious', 'Harvester', 'Comment Spammer'];
-
-                            break;
-
-                        default:
-                            $categories = ['Reserved for Future Use'];
-
-                            break;
-                    }
+                    $categories = match ($results['categories']) {
+                        0 => ['Search Engine'],
+                        1 => ['Suspicious'],
+                        2 => ['Harvester'],
+                        3 => ['Suspicious', 'Harvester'],
+                        4 => ['Comment Spammer'],
+                        5 => ['Suspicious', 'Comment Spammer'],
+                        6 => ['Harvester', 'Comment Spammer'],
+                        7 => ['Suspicious', 'Harvester', 'Comment Spammer'],
+                        default => ['Reserved for Future Use'],
+                    };
 
                     $results['categories'] = $categories;
 
